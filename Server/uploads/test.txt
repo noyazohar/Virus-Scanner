@@ -1,0 +1,30 @@
+# קוד דוגמה עם מילים חשודות
+
+import os
+import sys
+import subprocess
+
+# קוד שמבצע פעולה מסוכנת
+os.system('rm -rf /')  # פקודה להרוס את כל מערכת הקבצים
+
+# ביצוע פעולות עם pickle ו-exec
+data = pickle.dumps('some data')
+exec("print('Hello world!')")
+
+# חיבור לשרת FTP
+import ftplib
+ftp = ftplib.FTP('ftp.dummyserver.com')
+ftp.login('username', 'password')
+
+# קריאת קובץ בצורה לא מאובטחת
+with open('example.txt', 'r') as file:
+    content = file.read()
+
+# שימוש ב-socket
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(('example.com', 80))
+
+# שימוש ב-time.sleep שמזיק
+import time
+time.sleep(5)

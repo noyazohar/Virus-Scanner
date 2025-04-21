@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scan Results</title>
+  <style>
+    /* Main body styling */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      margin: 0;
+      background: black;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Matrix animation for background effect */
+    @keyframes matrix {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    /* Matrix container styling */
+    .matrix {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    /* Individual digits in matrix effect */
+    .matrix span {
+      position: absolute;
+      top: -100px;
+      color: rgba(0, 191, 255, 0.7); /* Blue matrix effect */
+      font-size: 18px;
+      font-family: monospace;
+      animation: matrix linear infinite;
+    }
+
+    /* Main content container */
+    .container {
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      margin: auto;
+      color: black;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Filename display styling */
+    .filename-display {
+      color: black;
+      font-size: 18px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      word-break: break-all;
+    }
+
+    /* Background colors based on risk assessment */
+    .safe { background-color: #2ecc71; } /* Green background for safe files */
+    .warning { background-color: #f39c12; } /* Orange background */
+    .danger { background-color: #e74c3c; } /* Red background */
+
+    /* Heading styling */
+    h1 { font-size: 24px; margin-bottom: 15px; color: black; }
+
+    /* Tooltip container styling */
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+      margin-right: 6px;
+      margin-left: 0;
+    }
+
+    /* Tooltip icon styling */
+    .tooltip-icon {
+      cursor: pointer;
+      color: #000;
+      font-size: 14px;
+      border-radius: 50%;
+      display: inline-block;
+      background-color: #eee;
+      width: 18px;
+      height: 18px;
+      text-align: center;
+      line-height: 18px;
+      font-weight: bold;
+    }
+
+    /* Tooltip text box styling */
+    .tooltip-text {
+      visibility: hidden;
+      width: 230px;
+      background-color: #333;
+      color: #fff;
+      text-align: left;
+      border-radius: 6px;
+      padding: 10px;
+      position: absolute;
+      z-index: 10;
+      bottom: 125%;
+      right: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 13px;
+      pointer-events: auto;
+    }
+
+    /* Tooltip visibility triggers */
+    .tooltip-container .tooltip-icon:focus + .tooltip-text,
+    .tooltip-container .tooltip-text:hover,
+    .tooltip-container:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Link styling in tooltips */
+    .tooltip-text a {
+      color: #4db8ff;
+      text-decoration: underline;
+      display: inline-block;
+      margin-top: 5px;
+    }
+
+    /* Back button styling */
+    .back-btn {
+      background-color: black;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      margin-top: 30px;
+    }
+
+    /* Back button hover effect */
+    .back-btn:hover {
+      background-color: #333;
+    }
+
+    /* Risk gauge container styling */
+    .risk-gauge-container {
+      margin: 30px auto;
+      width: 80%;
+      position: relative;
+      padding: 15px;
+      background-color: #f8f8f8;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      border: 1px solid #ddd;
+    }
+
+    /* Risk gauge bar with color gradient */
+    .risk-gauge {
+      height: 25px;
+      width: 100%;
+      background: linear-gradient(to right,
+        #2ecc71 0%, #2ecc71 29%, /* Green for 0-29% */
+        #2ecc71 29%, #f39c12 30%, /* Sharp transition */
+        #f39c12 30%, #f39c12 49%, /* Orange for 30-49% */
+        #f39c12 49%, #e74c3c 50%, /* Sharp transition */
+        #e74c3c 50%, #e74c3c 100% /* Red for 50-100% */
+      );
+      border-radius: 12px;
+      position: relative;
+      border: 2px solid #333;
+    }
+
+    /* Risk marker (current risk indicator) */
+    .risk-marker {
+      position: absolute;
+      width: 6px;
+      height: 35px;
+      background-color: #333;
+      top: -5px;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Risk labels container */
+    .risk-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    /* Individual risk label styling */
+    .risk-label {
+      position: relative;
+      text-align: center;
+    }
+
+    /* Styling for transition markers on gauge */
+    .transition-marker {
+      position: absolute;
+      width: 2px;
+      height: 10px;
+      background-color: #333;
+      top: -12px;
+    }
+
+    /* Position for 30% transition marker */
+    .transition-marker.thirty {
+      left: 30%;
+    }
+
+    /* Position for 50% transition marker */
+    .transition-marker.fifty {
+      left: 50%;
+    }
+
+    /* Total score display styling */
+    .score-display {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    /* Risk title styling */
+    .risk-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    /* Score info row layout */
+    .score-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
+    }
+
+    /* Score label styling */
+    .score-label {
+      text-align: right;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    /* Score value styling */
+    .score-value {
+      text-align: left;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Matrix background container -->
+  <div class="matrix"></div>
+
+  <!-- Main results container with dynamic class based on risk score -->
+  <div class="container
+    {% if malicious_score <= 29 %} safe
+    {% elif malicious_score <= 49 %} warning
+    {% else %} danger
+    {% endif %}
+  ">
+    <!-- Display the filename -->
+    <div class="filename-display">File: {{ filename }}</div>
+
+    <!-- Display risk level based on score -->
+    {% if malicious_score <= 29 %}
+      <h2>File is Safe</h2>
+    {% elif malicious_score <= 49 %}
+      <h2>Warning - Medium Risk</h2>
+    {% else %}
+      <h2>Danger - High Risk</h2>
+    {% endif %}
+
+    <!-- Visual risk gauge/meter -->
+    <div class="risk-gauge-container">
+      <div class="risk-title">Risk Assessment Scale</div>
+      <div class="risk-gauge">
+        <!-- Dynamic marker position based on malicious_score -->
+        <div class="risk-marker" style="left: {{ malicious_score }}%;"></div>
+        <div class="transition-marker thirty"></div>
+        <div class="transition-marker fifty"></div>
+      </div>
+      <div class="risk-labels">
+        <div class="risk-label">Safe<br/>0-29%</div>
+        <div class="risk-label">Medium Risk<br/>30-49%</div>
+        <div class="risk-label">High Risk<br/>50-100%</div>
+      </div>
+    </div>
+
+    <!-- Magic Score with tooltip explanation -->
+    <div class="score-info">
+      <span class="tooltip-container">
+        <span class="tooltip-icon" tabindex="0">❓</span>
+        <span class="tooltip-text">
+          Validates if the file extension matches its actual type using magic numbers.
+        </span>
+      </span>
+      <span class="score-label">Magic Score:</span>
+      <span class="score-value">{{ magic_score }}%</span>
+    </div>
+
+    <!-- Malware Bazaar Score with tooltip explanation -->
+    <div class="score-info">
+      <span class="tooltip-container">
+        <span class="tooltip-icon" tabindex="0">❓</span>
+        <span class="tooltip-text">
+          Checks if the file hash appears in Malware Bazaar's threat intelligence database.
+          <a href="https://bazaar.abuse.ch/browse/" target="_blank">Open Malware Bazaar</a>
+        </span>
+      </span>
+      <span class="score-label">Malware Bazaar Score:</span>
+      <span class="score-value">{{ maleware_bazzar_score }}%</span>
+    </div>
+
+    <!-- Data Analysis Score with tooltip explanation -->
+    <div class="score-info">
+      <span class="tooltip-container">
+        <span class="tooltip-icon" tabindex="0">❓</span>
+        <span class="tooltip-text">
+          Analyzes file content using keyword detection, entropy, and suspicious imports.
+        </span>
+      </span>
+      <span class="score-label">Data Analysis Score:</span>
+      <span class="score-value">{{ data_analysis_score }}%</span>
+    </div>
+
+    <!-- Detection mechanisms details -->
+    <p><strong>{{ detection_mechanisms }}</strong></p>
+
+    <!-- Total risk score display -->
+    <div class="score-display">Total Risk Score: {{ malicious_score }}%</div>
+
+    <!-- Back button to scan another file -->
+    <a href="/"><button class="back-btn">Scan Another File</button></a>
+  </div>
+
+  <script>
+    // Function to generate the matrix background effect
+    function generateMatrixEffect() {
+      const matrixContainer = document.querySelector('.matrix');
+      for (let i = 0; i < 150; i++) {
+        const span = document.createElement('span');
+        span.innerHTML = Math.floor(Math.random() * 10);
+        span.style.left = Math.random() * 100 + 'vw';
+        span.style.animationDuration = (Math.random() * 2 + 3) + 's';
+        span.style.animationDelay = Math.random() * 3 + 's';
+        matrixContainer.appendChild(span);
+      }
+    }
+    // Initialize matrix effect when page loads
+    generateMatrixEffect();
+
+    // Add keyboard accessibility to tooltip icons
+    document.querySelectorAll('.tooltip-icon').forEach(icon => {
+      icon.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          this.focus();
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
