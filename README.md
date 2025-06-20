@@ -1,5 +1,5 @@
 This project is a robust file scanning and analysis system based on a Server-Client architecture, developed in Python with SQL for database management and HTML for the client’s web interface. The primary goal of the system is to determine whether files uploaded by clients are malicious or benign (B9) using multiple specialized detection engines. The server is designed to handle multiple concurrent client connections (multi-client) and to perform analyses in parallel using threads, ensuring high performance and scalability.
-The system supports all file types, including archive files such as ZIP files, which are automatically extracted and analyzed in depth.
+The system supports all file types, including archive files such as archive files, which are automatically extracted and analyzed in depth.
 
 System Workflow
 1. Database Check
